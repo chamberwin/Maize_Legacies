@@ -1,3 +1,18 @@
+# Trying from https://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html
+install.packages(c("ggplot2", "devtools", "dplyr", "stringr"))
+install.packages(c("maps", "mapdata"))
+
+library(ggplot2)
+library(ggmap)
+library(maps)
+library(mapdata)
+
+# Set working directory
+setwd("C:/Users/chamb/Documents/Maize_Legacies/Map")
+
+usa <- map_data("peru")
+
+
 # Install needed packages
 install.packages(c("rgdal", "raster", "sp" , "ggplot2" , "readr"))
 
@@ -9,23 +24,27 @@ library(raster)
 library(ggplot2)
 library(readr)
 
-# Set working directory
-setwd("C:/Users/chamb/Documents/Maize_Legacies/Map")
 
-# Load altitude data for Peru and make raster readable
-altitude_file <- "C:/Users/chamb/Documents/Maize_Legacies/Map/Map_Shape.shp"
-altitude <- st_read(altitude_file)
 
-# Convert the shapefile to a data frame
-df_altitude <- as.data.frame(altitude)
+# Load latitude and longitude data
+data_file <- "C:/Users/chamb/Documents/Maize_Legacies/Map/Map_Coordinates.csv"
+coordinates <- read_csv(data_file)
 
-# Plot altitude map of Peru
+# Create an sf dataframe from coordinates
+sf_data <- st_as_sf(coordinates, coords = c("Longitude", "Latitude"), crs = 4326)
+
+# Load the overlay shapefile
+overlay_file <- "C:/Users/chamb/Documents/Maize_Legacies/Map/Map_Shape.shp"
+overlay <- st_read(overlay_file)
+head(overlay_file)
+
+# Plot map based on coordinates with overlay
 ggplot() +
-  geom_raster(data = df_altitude, aes(x = x, y = y, fill = layer)) +
-  scale_fill_gradientn(colours = terrain.colors(10)) +
+  geom_sf(data = sf_data) +
+  geom_sf(data = overlay, fill = "transparent", color = "red") +
   theme_minimal() +
-  labs(title = "Altitude Map of Peru", x = "Longitude", y = "Latitude") +
-  coord_equal()
+  labs(title = "Map of Peru with Overlay", x = "Longitude", y = "Latitude") +
+  coord_sf()
 
 
 
