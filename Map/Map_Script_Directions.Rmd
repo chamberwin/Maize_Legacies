@@ -1,0 +1,9 @@
+Make sure to replace the "path/to/..." placeholders with the actual file paths in your system. Also, ensure that you have the required R packages installed (raster, ggplot2, and readr) before running the script.
+
+This script assumes that you have altitude data for Peru in a TIFF format file (peru_altitude.tif). It also assumes that you have a CSV file (coordinates.csv) with columns for Latitude and Longitude. The WorldClim climate data is assumed to be in a TIFF file format (worldclim_data.tif). You can obtain the altitude and climate data from the appropriate sources and replace the file paths accordingly.
+
+The script first loads the altitude data for Peru and the latitude and longitude coordinates. It then extracts the altitude values at each coordinate and appends them to the coordinates dataset. Next, it loads the climate data from the WorldClim database and extracts the climate data at each coordinate, appending it to the coordinates dataset as well.
+
+Finally, it creates two plots using ggplot2. The first plot shows the altitude map of Peru, and the second plot overlays symbols (red dots) on the altitude map representing the coordinates. The final map with symbols is saved as a PNG image.
+
+Feel free to adjust the plot settings and customize the script further based on your specific requirements.
