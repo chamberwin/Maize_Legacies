@@ -6,45 +6,46 @@ library(ggplot2)
 library(ggmap)
 library(maps)
 library(mapdata)
+library(mapproj)
 
 # Set working directory
 setwd("C:/Users/chamb/Documents/Maize_Legacies/Map")
 
-usa <- map_data("peru")
-
-
-# Install needed packages
-install.packages(c("rgdal", "raster", "sp" , "ggplot2" , "readr"))
-
-# Required libraries
-library(rgdal)
-library(sp)
-library(sf)
-library(raster)
+#Load libraries
 library(ggplot2)
-library(readr)
+library(raster)
 
+#Load elevation .tif
+elevation_file <- "C:/Users/chamb/Documents/Maize_Legacies/Map/Peru_Elevation.tif"
+elevation_raster <- raster(elevation_file)
 
+#Make .tif into dataframe
+elevation_df <- as.data.frame(elevation_raster, xy = TRUE)
+colnames(elevation_df) <- c("Longitude", "Latitude", "Elevation")
 
-# Load latitude and longitude data
-data_file <- "C:/Users/chamb/Documents/Maize_Legacies/Map/Map_Coordinates.csv"
-coordinates <- read_csv(data_file)
-
-# Create an sf dataframe from coordinates
-sf_data <- st_as_sf(coordinates, coords = c("Longitude", "Latitude"), crs = 4326)
-
-# Load the overlay shapefile
-overlay_file <- "C:/Users/chamb/Documents/Maize_Legacies/Map/Map_Shape.shp"
-overlay <- st_read(overlay_file)
-head(overlay_file)
-
-# Plot map based on coordinates with overlay
+#Works?
 ggplot() +
-  geom_sf(data = sf_data) +
-  geom_sf(data = overlay, fill = "transparent", color = "red") +
-  theme_minimal() +
-  labs(title = "Map of Peru with Overlay", x = "Longitude", y = "Latitude") +
-  coord_sf()
+  ## First layer: worldwide map
+  geom_polygon(data = map_data("world"),
+               aes(x = long, y = lat, group = group),
+               color = '#9c9c9c', fill = '#f3f3f3') +
+  ## Second layer: Country map
+  geom_polygon(data = map_data_es,
+               aes(x = long, y = lat, group = group),
+               color = 'red', fill = 'pink') +
+  ## Third layer: Points from "Maize_List"
+  geom_point(data = maize_data,
+             aes(x = Longitude, y = Latitude),
+             color = 'blue', size = 3) +
+  ## Fourth layer: Elevation color scale
+  geom_raster(data = elevation_df,
+              aes(x = Longitude, y = Latitude, fill = Elevation)) +
+  scale_fill_gradient(low = "blue", high = "red") +
+  coord_map() +
+  coord_fixed(1.3,
+              xlim = c(-81, -68),
+              ylim = c(-19, -0.5))
+#Does not work. I don't think the USGS file is right
 
 
 
@@ -52,54 +53,133 @@ ggplot() +
 
 
 
-# Check the properties of the raster
-altitude
+# Read the data from the "Maize_List" file
+maize_data <- read.csv("Maize_List.csv")
 
-# Everything above works right!
-
-# Plot altitude map of Peru
+# Create the plot
 ggplot() +
-  geom_raster(data = altitude, aes(x = x, y = y, fill = value), interpolate = TRUE) +
-  scale_fill_gradientn(colours = terrain.colors(10)) +
-  theme_minimal() +
-  labs(title = "Altitude Map of Peru", x = "Longitude", y = "Latitude") +
-  coord_equal()
+  ## First layer: worldwide map
+  geom_polygon(data = map_data("world"),
+               aes(x = long, y = lat, group = group),
+               color = '#9c9c9c', fill = '#f3f3f3') +
+  ## Second layer: Country map
+  geom_polygon(data = map_data_es,
+               aes(x = long, y = lat, group = group),
+               color = 'red', fill = 'pink') +
+  ## Third layer: Points from "Maize_List"
+  geom_point(data = maize_data,
+             aes(x = Longitude, y = Latitude),
+             color = 'blue', size = 3) +
+  ## Fourth layer: Elevation color scale
+  geom_raster(data = raster_data,  # Replace "elevation_data" with your own elevation data
+              aes(x = Longitude, y = Latitude, fill = Elevation)) +
+  scale_fill_gradient(low = "blue", high = "red") +  # Adjust the color scale as desired
+  coord_map() +
+  coord_fixed(1.3,
+              xlim = c(-81, -68),
+              ylim = c(-19, -0.5))
 
-rlang::last_error()
 
-# Load latitude and longitude data
-data_file <- "C:/Users/chamb/Documents/Maize_Legacies/Map/Maize_List.csv"
-coordinates <- read_csv(data_file)
+#ChatGPTs help with adding data points
 
+# Read the data from the "Maize_List" file
+maize_data <- read.csv("Maize_List.csv")
 
-
-# Extract altitude values at each coordinate
-coordinates$Altitude <- extract(altitude, coordinates[, c("Longitude", "Latitude")])
-
-# Load climate data from WorldClim database
-climate_file <- "path/to/worldclim_data.tif"
-climate_data <- raster(climate_file)
-
-# Extract climate data at each coordinate
-coordinates$ClimateData <- extract(climate_data, coordinates[, c("Longitude", "Latitude")])
-
-# Plot altitude map of Peru
+# Create the plot
 ggplot() +
-  geom_raster(data = altitude, aes(x = x, y = y, fill = value), interpolate = TRUE) +
-  scale_fill_gradientn(colours = terrain.colors(10)) +
-  theme_minimal() +
-  labs(title = "Altitude Map of Peru", x = "Longitude", y = "Latitude") +
-  coord_equal()
+  ## First layer: worldwide map
+  geom_polygon(data = map_data("world"),
+               aes(x = long, y = lat, group = group),
+               color = '#9c9c9c', fill = '#f3f3f3') +
+  ## Second layer: Country map
+  geom_polygon(data = map_data_es,
+               aes(x = long, y = lat, group = group),
+               color = 'red', fill = 'pink') +
+  ## Third layer: Points from "Maize_List"
+  geom_point(data = maize_data,
+             aes(x = Longitude, y = Latitude),
+             color = 'blue', size = 2) +
+  coord_map() +
+  coord_fixed(1.3,
+              xlim = c(-81, -68),
+              ylim = c(-19, -0.5))
+#Works!
+#To add elevation to the map, I need to download elevation raster from USGS
+library(ggplot2)
 
-# Plot altitude map of Peru
+# Read the data from the "Maize_List" file
+maize_data <- read.csv("Maize_List.csv")
+
+# Create the plot
 ggplot() +
-  geom_sf(data = df_altitude, aes(fill = alt_value)) +
-  scale_fill_gradientn(colours = terrain.colors(10)) +
-  theme_minimal() +
-  labs(title = "Altitude Map of Peru", x = "Longitude", y = "Latitude") +
-  coord_sf()
+  ## First layer: worldwide map
+  geom_polygon(data = map_data("world"),
+               aes(x = long, y = lat, group = group),
+               color = '#9c9c9c', fill = '#f3f3f3') +
+  ## Second layer: Country map
+  geom_polygon(data = map_data_es,
+               aes(x = long, y = lat, group = group),
+               color = 'red', fill = 'pink') +
+  ## Third layer: Points from "Maize_List"
+  geom_point(data = maize_data,
+             aes(x = Longitude, y = Latitude),
+             color = 'blue', size = 3) +
+  ## Fourth layer: Elevation color scale
+  geom_raster(data = elevation_data,  # Replace "elevation_data" with your own elevation data
+              aes(x = Longitude, y = Latitude, fill = Elevation)) +
+  scale_fill_gradient(low = "blue", high = "red") +  # Adjust the color scale as desired
+  coord_map() +
+  coord_fixed(1.3,
+              xlim = c(-81, -68),
+              ylim = c(-19, -0.5))
 
-#Not working yet
 
-# Save the final map with symbols
-ggsave("path/to/output_map.png", width = 10, height = 10)
+#Set map to Peru
+map_data_es <- map_data('world')[map_data('world')$region == "Peru",]
+
+ggplot() +
+  ## First layer: worldwide map
+  geom_polygon(data = map_data("world"),
+               aes(x=long, y=lat, group = group),
+               color = '#9c9c9c', fill = '#f3f3f3') +
+  ## Second layer: Country map
+  geom_polygon(data = map_data_es,
+               aes(x=long, y=lat, group = group),
+               color = 'red', fill = 'pink') +
+  coord_map() +
+  coord_fixed(1.3,
+              xlim = c(-81, -68),
+              ylim = c(-19, -0.5))+
+ggtitle("A Map of Peru") +
+  theme(panel.background =element_rect(fill = 'blue'))
+#Works!
+
+#Need to download Peru elevations in raster format from USGS, then use this code
+library(ggplot2)
+
+# Read the data from the "Maize_List" file
+maize_data <- read.csv("Maize_List.csv")
+
+# Create the plot
+ggplot() +
+  ## First layer: worldwide map
+  geom_polygon(data = map_data("world"),
+               aes(x = long, y = lat, group = group),
+               color = '#9c9c9c', fill = '#f3f3f3') +
+  ## Second layer: Country map
+  geom_polygon(data = map_data_es,
+               aes(x = long, y = lat, group = group),
+               color = 'red', fill = 'pink') +
+  ## Third layer: Points from "Maize_List"
+  geom_point(data = maize_data,
+             aes(x = Longitude, y = Latitude),
+             color = 'blue', size = 2) +
+  ## Fourth layer: Elevation color scale
+  geom_raster(data = elevation_data,  # Replace "elevation_data" with your own elevation data
+              aes(x = Longitude, y = Latitude, fill = Elevation)) +
+  scale_fill_gradient(low = "blue", high = "red") +  # Adjust the color scale as desired
+  coord_map() +
+  coord_fixed(1.3,
+              xlim = c(-81, -68),
+              ylim = c(-19, -0.5))
+
