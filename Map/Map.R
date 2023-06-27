@@ -36,7 +36,7 @@ ggplot() +
   ## Third layer: Points from "Maize_List"
   geom_point(data = maize_data,
              aes(x = Longitude, y = Latitude),
-             color = 'blue', size = 3) +
+             color = 'blue', size = 2) +
   ## Fourth layer: Elevation color scale
   geom_raster(data = elevation_df,
               aes(x = Longitude, y = Latitude, fill = Elevation)) +
