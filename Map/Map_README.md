@@ -11,6 +11,8 @@ Start by downloading world elevation .tiff file: https://1drv.ms/f/s!ArKdxoWjZVk
 
 **Map.png** is the plot created by the script.
 
+**Map_Country_Outline.png** is the map with the country outlined.
+
 **Map.R** was a test script.
 
 
